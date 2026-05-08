@@ -194,68 +194,68 @@ See the full [Roles & Permissions](#roles--permissions) section below.
 
 ```mermaid
 erDiagram
+    equipment ||--o{ equipmentAssignments : "assigned via"
+    sites ||--o{ equipmentAssignments : "hosts"
+    equipment ||--o{ keyAuditLogs : "has key events"
+    equipment ||--o{ activityLogs : "has activity"
+    sites ||--o{ activityLogs : "has activity"
+
     equipment {
-        id _id PK
+        string id PK
         string name
         string type
         string serialNumber
         string status
         string acquisitionDate
         string keyStatus
-        number decommissionedAt
+        int decommissionedAt
     }
 
     sites {
-        id _id PK
+        string id PK
         string name
         string location
-        number coordinates_lat
-        number coordinates_lng
+        float coordinates_lat
+        float coordinates_lng
         string status
     }
 
     equipmentAssignments {
-        id _id PK
-        id equipmentId FK
-        id siteId FK
+        string id PK
+        string equipmentId FK
+        string siteId FK
         string assignedBy
-        number assignedAt
-        number unassignedAt
+        int assignedAt
+        int unassignedAt
         string unassignedBy
         string unassignedReason
     }
 
     keyAuditLogs {
-        id _id PK
-        id equipmentId FK
+        string id PK
+        string equipmentId FK
         string action
         string performedBy
-        number timestamp
+        int timestamp
         string status
     }
 
     activityLogs {
-        id _id PK
+        string id PK
         string category
         string entityType
         string entityId
         string action
         string performedBy
         string details
-        number timestamp
+        int timestamp
     }
 
     userRoles {
-        id _id PK
+        string id PK
         string userId FK
         string role
     }
-
-    equipment ||--o{ equipmentAssignments : "assigned via"
-    sites ||--o{ equipmentAssignments : "hosts"
-    equipment ||--o{ keyAuditLogs : "has key events"
-    equipment ||--o{ activityLogs : "has activity"
-    sites ||--o{ activityLogs : "has activity"
 ```
 
 > `activityLogs.entityId` references either an `equipment._id` or `sites._id` depending on `entityType` (polymorphic reference, not a foreign key constraint).
