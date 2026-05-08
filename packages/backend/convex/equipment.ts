@@ -52,13 +52,13 @@ export const getById = query({
 export const isAssigned = internalQuery({
   args: { equipmentId: v.id("equipment") },
   handler: async (ctx, args) => {
-    const active = await ctx.db
+    const all = await ctx.db
       .query("equipmentAssignments")
-      .withIndex("by_equipmentId_active", (q) =>
-        q.eq("equipmentId", args.equipmentId).eq("unassignedAt", undefined),
+      .withIndex("by_equipmentId", (q) =>
+        q.eq("equipmentId", args.equipmentId),
       )
-      .first();
-    return active !== null;
+      .collect();
+    return all.some((a) => a.unassignedAt === undefined);
   },
 });
 
@@ -73,6 +73,20 @@ export const getActivityLog = query({
       .withIndex("by_entity", (q) =>
         q.eq("entityType", "equipment").eq("entityId", args.equipmentId),
       )
+      .order("desc")
+      .collect();
+  },
+});
+
+/**
+ * Get all activity log entries, sorted by most recent first.
+ */
+export const listAllActivityLogs = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db
+      .query("activityLogs")
+      .withIndex("by_timestamp")
       .order("desc")
       .collect();
   },
@@ -230,12 +244,13 @@ export const decommission = mutation({
     }
 
     // ── Validation: must not be actively assigned ──
-    const activeAssignment = await ctx.db
+    const allAssignments = await ctx.db
       .query("equipmentAssignments")
-      .withIndex("by_equipmentId_active", (q) =>
-        q.eq("equipmentId", args.equipmentId).eq("unassignedAt", undefined),
+      .withIndex("by_equipmentId", (q) =>
+        q.eq("equipmentId", args.equipmentId),
       )
-      .first();
+      .collect();
+    const activeAssignment = allAssignments.find((a) => a.unassignedAt === undefined);
 
     if (activeAssignment) {
       throw new Error(

@@ -11,7 +11,11 @@ import { ThemeProvider } from "@/components/theme-provider";
 
 import "../index.css";
 
-export interface RouterAppContext {}
+import { authClient } from "@/lib/auth-client";
+
+export interface RouterAppContext {
+  authClient: typeof authClient;
+}
 
 export const Route = createRootRouteWithContext<RouterAppContext>()({
     component: RootComponent,
