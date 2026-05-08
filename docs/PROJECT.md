@@ -367,3 +367,10 @@ IronLog uses **Better-Auth** with the Convex adapter for email/password authenti
 - Auth endpoints are registered on Convex's HTTP router with CORS configured for the frontend origin
 - The `authClient` in `apps/web/src/lib/auth-client.ts` provides `signIn`, `signUp`, and session management hooks
 - Authenticated user identity is resolved server-side in all Convex queries and mutations via `authComponent.safeGetAuthUser(ctx)`, making it impossible to spoof the `performedBy` field in any log
+
+  ***
+
+## Working Creds
+
+- Email: admin@company.com
+- Password: admin12345

@@ -4,24 +4,15 @@ import type { Role } from "@/lib/permissions";
 
 export function useAuth() {
     const user = useQuery(api.auth.getCurrentUser);
-    const userRole = useQuery(api.rbac.getCurrentRole);
 
-    // Map backend role string to frontend Role type
-    const role: Role = (userRole === "Fleet Manager"
-        ? "FleetManager"
-        : userRole === "Site Supervisor"
-            ? "SiteSupervisor"
-            : userRole === "Operations Manager"
-                ? "OperationsManager"
-                : (userRole as Role)) ?? "Viewer";
+    // PRESENTATION MODE: always Admin
+    const role: Role = "Admin";
 
     return {
         currentUser: user
             ? { id: user._id, name: user.name ?? user.email ?? "User" }
             : null,
         role,
-        setRole: () => {
-            // Role is managed server-side; no-op on client
-        },
+        setRole: () => {},
     };
 }

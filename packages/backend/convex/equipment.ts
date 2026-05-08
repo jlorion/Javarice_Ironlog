@@ -278,3 +278,111 @@ export const decommission = mutation({
     return args.equipmentId;
   },
 });
+
+/* ═══════════════════════════════════════════════════════════════
+ *  KEY MANAGEMENT
+ * ═══════════════════════════════════════════════════════════════ */
+
+/**
+ * Check out a key: sets keyStatus to "Key Out".
+ */
+export const checkOutKey = mutation({
+  args: {
+    equipmentId: v.id("equipment"),
+    performedBy: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await authComponent.safeGetAuthUser(ctx);
+    const performedBy = args.performedBy || user?.email || "unknown";
+
+    const equipment = await ctx.db.get(args.equipmentId);
+    if (!equipment) {
+      throw new Error(`Equipment not found: ${args.equipmentId}`);
+    }
+
+    if (equipment.keyStatus === "Key Out") {
+      throw new Error("Key is already checked out.");
+    }
+
+    await ctx.db.patch(args.equipmentId, { keyStatus: "Key Out" });
+
+    await ctx.db.insert("keyAuditLogs", {
+      equipmentId: args.equipmentId,
+      action: "Key Checked Out",
+      performedBy,
+      timestamp: Date.now(),
+      status: "Key Out",
+    });
+
+    await ctx.db.insert("activityLogs", {
+      category: "equipment",
+      entityType: "equipment",
+      entityId: args.equipmentId,
+      action: "updated",
+      performedBy,
+      details: `Key checked out from ${equipment.name} by ${performedBy}`,
+      timestamp: Date.now(),
+    });
+
+    return args.equipmentId;
+  },
+});
+
+/**
+ * Return a key: sets keyStatus to "Key In".
+ */
+export const returnKey = mutation({
+  args: {
+    equipmentId: v.id("equipment"),
+    performedBy: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const user = await authComponent.safeGetAuthUser(ctx);
+    const performedBy = args.performedBy || user?.email || user?.name || "unknown";
+
+    const equipment = await ctx.db.get(args.equipmentId);
+    if (!equipment) {
+      throw new Error(`Equipment not found: ${args.equipmentId}`);
+    }
+
+    if (equipment.keyStatus === "Key In") {
+      throw new Error("Key is already returned.");
+    }
+
+    await ctx.db.patch(args.equipmentId, { keyStatus: "Key In" });
+
+    await ctx.db.insert("keyAuditLogs", {
+      equipmentId: args.equipmentId,
+      action: "Key Returned",
+      performedBy,
+      timestamp: Date.now(),
+      status: "Key In",
+    });
+
+    await ctx.db.insert("activityLogs", {
+      category: "equipment",
+      entityType: "equipment",
+      entityId: args.equipmentId,
+      action: "updated",
+      performedBy,
+      details: `Key returned for ${equipment.name} by ${performedBy}`,
+      timestamp: Date.now(),
+    });
+
+    return args.equipmentId;
+  },
+});
+
+/**
+ * Get key audit logs for a specific equipment.
+ */
+export const getKeyAuditLog = query({
+  args: { equipmentId: v.id("equipment") },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("keyAuditLogs")
+      .withIndex("by_equipmentId", (q) => q.eq("equipmentId", args.equipmentId))
+      .order("desc")
+      .collect();
+  },
+});
