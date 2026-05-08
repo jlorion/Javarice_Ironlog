@@ -1,5 +1,6 @@
+import { api } from "@project-construction/backend/convex/_generated/api";
+import { useQuery } from "convex/react";
 import { createFileRoute } from "@tanstack/react-router";
-import { useAuditLog } from "@/hooks/useAuditLog";
 import { Badge } from "@project-construction/ui/components/badge";
 import {
     Table,
@@ -23,20 +24,9 @@ const actionConfig: Record<string, { label: string; variant: "default" | "second
 };
 
 function AuditLogPage() {
-    const { data: logs, isLoading } = useAuditLog();
+    const activityLogs = useQuery(api.equipment.listAllActivityLogs) ?? [];
 
-    if (isLoading) {
-        return (
-            <div className="flex flex-col gap-6 p-4 lg:px-8">
-                <h1 className="il-display text-2xl text-foreground">Audit Log</h1>
-                <div className="border border-border bg-card px-4 py-8 text-center text-sm text-muted-foreground">
-                    Loading activity logs...
-                </div>
-            </div>
-        );
-    }
-
-    if (logs.length === 0) {
+    if (activityLogs.length === 0) {
         return (
             <div className="flex flex-col gap-6 p-4 lg:px-8">
                 <h1 className="il-display text-2xl text-foreground">Audit Log</h1>
@@ -52,7 +42,7 @@ function AuditLogPage() {
             <div>
                 <h1 className="il-display text-2xl text-foreground">Audit Log</h1>
                 <p className="text-sm text-muted-foreground">
-                    System-wide activity and equipment lifecycle events.
+                    System-wide activity, equipment lifecycle, and key events.
                 </p>
             </div>
 
@@ -67,13 +57,13 @@ function AuditLogPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {logs.map((log) => {
+                        {activityLogs.map((log) => {
                             const config = actionConfig[log.action] ?? {
                                 label: log.action,
                                 variant: "outline" as const,
                             };
                             return (
-                                <TableRow key={log.id}>
+                                <TableRow key={log._id}>
                                     <TableCell className="il-timestamp text-xs whitespace-nowrap">
                                         {new Date(log.timestamp).toLocaleString()}
                                     </TableCell>
