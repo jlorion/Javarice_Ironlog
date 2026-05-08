@@ -8,10 +8,15 @@
  * @module
  */
 
+import type * as activity from "../activity.js";
 import type * as auth from "../auth.js";
+import type * as equipment from "../equipment.js";
 import type * as healthCheck from "../healthCheck.js";
 import type * as http from "../http.js";
 import type * as privateData from "../privateData.js";
+import type * as rbac from "../rbac.js";
+import type * as seed from "../seed.js";
+import type * as seedAuth from "../seedAuth.js";
 
 import type {
   ApiFromModules,
@@ -20,10 +25,15 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  activity: typeof activity;
   auth: typeof auth;
+  equipment: typeof equipment;
   healthCheck: typeof healthCheck;
   http: typeof http;
   privateData: typeof privateData;
+  rbac: typeof rbac;
+  seed: typeof seed;
+  seedAuth: typeof seedAuth;
 }>;
 
 /**

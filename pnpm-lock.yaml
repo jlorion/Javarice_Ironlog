@@ -69,6 +69,9 @@ importers:
       '@project-construction/env':
         specifier: workspace:*
         version: link:../../packages/env
+      '@project-construction/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       '@project-construction/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -148,6 +151,9 @@ importers:
       '@convex-dev/better-auth':
         specifier: 'catalog:'
         version: 0.12.2(@standard-schema/spec@1.1.0)(better-auth@1.6.9(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(convex@1.37.0(react@19.2.6))(hono@4.12.18)(react@19.2.6)(typescript@6.0.3)
+      '@project-construction/types':
+        specifier: workspace:*
+        version: link:../types
       better-auth:
         specifier: 'catalog:'
         version: 1.6.9(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -188,6 +194,22 @@ importers:
       '@project-construction/config':
         specifier: workspace:*
         version: link:../config
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+
+  packages/types:
+    dependencies:
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
+    devDependencies:
+      '@project-construction/config':
+        specifier: workspace:*
+        version: link:../config
+      '@types/node':
+        specifier: ^22.13.14
+        version: 22.19.18
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
