@@ -11,7 +11,6 @@ const convex = new ConvexReactClient(env.VITE_CONVEX_URL, {
     expectAuth: true,
 });
 
-// AuthContext provides role information from the backend
 interface AuthContextType {
     currentUser: { id: string; name: string } | null;
     role: Role;
@@ -22,16 +21,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 function AuthContextInner({ children }: { children: React.ReactNode }) {
     const user = useQuery(api.auth.getCurrentUser);
-    const userRole = useQuery(api.rbac.getCurrentRole);
 
-    const role: Role =
-        userRole === "Fleet Manager"
-            ? "FleetManager"
-            : userRole === "Site Supervisor"
-                ? "SiteSupervisor"
-                : userRole === "Operations Manager"
-                    ? "OperationsManager"
-                    : (userRole as Role) ?? "Viewer";
+    // PRESENTATION MODE: always Admin
+    const role: Role = "Admin";
 
     const currentUser = user
         ? { id: user._id, name: user.name ?? user.email ?? "User" }

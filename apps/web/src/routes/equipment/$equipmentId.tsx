@@ -1,6 +1,6 @@
 import { api } from "@project-construction/backend/convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useForm } from "@tanstack/react-form";
 import { PermissionGuard } from "@/components/permission-guard";
 import { Button } from "@project-construction/ui/components/button";
@@ -28,15 +28,31 @@ export const Route = createFileRoute("/equipment/$equipmentId")({
 function EquipmentDetailPage() {
     const { equipmentId } = Route.useParams();
     const navigate = useNavigate();
-    const { role } = useAuth();
+    const { currentUser } = useAuth();
 
     const equipment = useQuery(api.equipment.getById, {
         equipmentId: equipmentId as any,
     });
+    const assignment = useQuery(api.assignments.getByEquipment, {
+        equipmentId: equipmentId as any,
+    });
+    const sites = useQuery(api.sites.list, {}) ?? [];
+    const siteDetail = useQuery(
+        api.sites.getById,
+        assignment ? { siteId: assignment.siteId } : "skip",
+    );
     const updateEquipment = useMutation(api.equipment.update);
     const decommissionEquipment = useMutation(api.equipment.decommission);
+    const checkOutKey = useMutation(api.equipment.checkOutKey);
+    const returnKey = useMutation(api.equipment.returnKey);
+    const assignEquipment = useMutation(api.assignments.assign);
+    const unassignEquipment = useMutation(api.assignments.unassign);
 
+    const [workerName, setWorkerName] = useState("");
+    const [isCheckOutOpen, setIsCheckOutOpen] = useState(false);
     const [isReturnOpen, setIsReturnOpen] = useState(false);
+    const [isDeployOpen, setIsDeployOpen] = useState(false);
+    const [selectedSiteId, setSelectedSiteId] = useState<string>("");
 
     const editForm = useForm({
         defaultValues: {
@@ -83,11 +99,29 @@ function EquipmentDetailPage() {
         },
     });
 
+    const handleCheckOutKey = async () => {
+        if (!workerName.trim()) {
+            toast.error("Worker name is required.");
+            return;
+        }
+        try {
+            await checkOutKey({
+                equipmentId: equipmentId as any,
+                performedBy: workerName,
+            });
+            toast.success("Key checked out successfully.");
+            setIsCheckOutOpen(false);
+            setWorkerName("");
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Failed to check out key");
+        }
+    };
+
     const handleReturnKey = async () => {
         try {
-            await updateEquipment({
+            await returnKey({
                 equipmentId: equipmentId as any,
-                // Return key is just a status update — key status tracked via keyAuditLogs
+                performedBy: currentUser?.name,
             });
             toast.success("Key returned successfully.");
             setIsReturnOpen(false);
@@ -96,9 +130,39 @@ function EquipmentDetailPage() {
         }
     };
 
+    const handleDeploy = async () => {
+        if (!selectedSiteId) {
+            toast.error("Select a site to deploy to.");
+            return;
+        }
+        try {
+            await assignEquipment({
+                equipmentId: equipmentId as any,
+                siteId: selectedSiteId as any,
+            });
+            toast.success("Equipment deployed successfully.");
+            setIsDeployOpen(false);
+            setSelectedSiteId("");
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Failed to deploy equipment");
+        }
+    };
+
+    const handleUnassign = async () => {
+        try {
+            await unassignEquipment({ equipmentId: equipmentId as any });
+            toast.success("Equipment unassigned successfully.");
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Failed to unassign equipment");
+        }
+    };
+
     if (!equipment) {
         return <div className="p-4">Loading equipment...</div>;
     }
+
+    const activeSites = sites.filter((s) => s.status === "Active");
+    const isDeployed = equipment.status === "Deployed";
 
     return (
         <div className="flex flex-col gap-6 p-4 lg:px-8 max-w-4xl mx-auto w-full">
@@ -115,7 +179,7 @@ function EquipmentDetailPage() {
                     <h1 className="il-display text-2xl text-foreground">
                         {equipment.name}
                     </h1>
-                    <p className="il-eq-id">{equipment.serialNumber}</p>
+                    <p className="il-eq-id text-sm text-muted-foreground">{equipment.serialNumber}</p>
                 </div>
                 <div className="ml-auto flex items-center gap-2">
                     <Badge
@@ -150,17 +214,11 @@ function EquipmentDetailPage() {
                                             id={field.name}
                                             value={field.state.value}
                                             onBlur={field.handleBlur}
-                                            onChange={(e) =>
-                                                field.handleChange(e.target.value)
-                                            }
+                                            onChange={(e) => field.handleChange(e.target.value)}
                                         />
-                                        {field.state.meta.errors.map(
-                                            (err, i) => (
-                                                <span key={i} className="text-sm text-destructive">
-                                                    {err?.message}
-                                                </span>
-                                            ),
-                                        )}
+                                        {field.state.meta.errors.map((err, i) => (
+                                            <span key={i} className="text-sm text-destructive">{err?.message}</span>
+                                        ))}
                                     </div>
                                 )}
                             </editForm.Field>
@@ -173,17 +231,11 @@ function EquipmentDetailPage() {
                                             id={field.name}
                                             value={field.state.value}
                                             onBlur={field.handleBlur}
-                                            onChange={(e) =>
-                                                field.handleChange(e.target.value)
-                                            }
+                                            onChange={(e) => field.handleChange(e.target.value)}
                                         />
-                                        {field.state.meta.errors.map(
-                                            (err, i) => (
-                                                <span key={i} className="text-sm text-destructive">
-                                                    {err?.message}
-                                                </span>
-                                            ),
-                                        )}
+                                        {field.state.meta.errors.map((err, i) => (
+                                            <span key={i} className="text-sm text-destructive">{err?.message}</span>
+                                        ))}
                                     </div>
                                 )}
                             </editForm.Field>
@@ -191,25 +243,17 @@ function EquipmentDetailPage() {
                             <editForm.Field name="serialNumber">
                                 {(field) => (
                                     <div className="flex flex-col gap-2">
-                                        <Label htmlFor={field.name}>
-                                            Serial Number
-                                        </Label>
+                                        <Label htmlFor={field.name}>Serial Number</Label>
                                         <Input
                                             id={field.name}
                                             value={field.state.value}
                                             onBlur={field.handleBlur}
-                                            onChange={(e) =>
-                                                field.handleChange(e.target.value)
-                                            }
+                                            onChange={(e) => field.handleChange(e.target.value)}
                                             className="font-mono"
                                         />
-                                        {field.state.meta.errors.map(
-                                            (err, i) => (
-                                                <span key={i} className="text-sm text-destructive">
-                                                    {err?.message}
-                                                </span>
-                                            ),
-                                        )}
+                                        {field.state.meta.errors.map((err, i) => (
+                                            <span key={i} className="text-sm text-destructive">{err?.message}</span>
+                                        ))}
                                     </div>
                                 )}
                             </editForm.Field>
@@ -217,16 +261,12 @@ function EquipmentDetailPage() {
                             <editForm.Field name="status">
                                 {(field) => (
                                     <div className="flex flex-col gap-2">
-                                        <Label htmlFor={field.name}>
-                                            Status
-                                        </Label>
+                                        <Label htmlFor={field.name}>Status</Label>
                                         <select
                                             id={field.name}
                                             value={field.state.value}
                                             onBlur={field.handleBlur}
-                                            onChange={(e) =>
-                                                field.handleChange(e.target.value)
-                                            }
+                                            onChange={(e) => field.handleChange(e.target.value)}
                                             className="il-touch w-full rounded-none border border-input bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                                         >
                                             <option value="Available">Available</option>
@@ -241,42 +281,28 @@ function EquipmentDetailPage() {
                             <editForm.Field name="acquisitionDate">
                                 {(field) => (
                                     <div className="flex flex-col gap-2">
-                                        <Label htmlFor={field.name}>
-                                            Acquisition Date
-                                        </Label>
+                                        <Label htmlFor={field.name}>Acquisition Date</Label>
                                         <Input
                                             type="date"
                                             id={field.name}
                                             value={field.state.value}
                                             onBlur={field.handleBlur}
-                                            onChange={(e) =>
-                                                field.handleChange(e.target.value)
-                                            }
+                                            onChange={(e) => field.handleChange(e.target.value)}
                                         />
-                                        {field.state.meta.errors.map(
-                                            (err, i) => (
-                                                <span key={i} className="text-sm text-destructive">
-                                                    {err?.message}
-                                                </span>
-                                            ),
-                                        )}
+                                        {field.state.meta.errors.map((err, i) => (
+                                            <span key={i} className="text-sm text-destructive">{err?.message}</span>
+                                        ))}
                                     </div>
                                 )}
                             </editForm.Field>
 
                             <PermissionGuard action="updateEquipment">
                                 <editForm.Subscribe
-                                    selector={(state) => [
-                                        state.canSubmit,
-                                        state.isSubmitting,
-                                    ]}
+                                    selector={(state) => [state.canSubmit, state.isSubmitting]}
                                 >
                                     {([canSubmit, isSubmitting]) => (
                                         <div className="sm:col-span-2 flex justify-end mt-2">
-                                            <Button
-                                                type="submit"
-                                                disabled={!canSubmit || isSubmitting}
-                                            >
+                                            <Button type="submit" disabled={!canSubmit || isSubmitting}>
                                                 Save Changes
                                             </Button>
                                         </div>
@@ -288,57 +314,143 @@ function EquipmentDetailPage() {
                 </div>
 
                 <div className="flex flex-col gap-6">
+                    {/* ── Site Assignment ── */}
+                    <section className="border border-border bg-card p-6 flex flex-col gap-4">
+                        <h2 className="il-section-label">Site Assignment</h2>
+                        {isDeployed && assignment && siteDetail ? (
+                            <>
+                                <div className="flex flex-col gap-2 text-sm">
+                                    <div className="flex justify-between py-2 border-b border-border">
+                                        <span className="text-muted-foreground">Assigned to</span>
+                                        <span className="font-semibold">{siteDetail.name}</span>
+                                    </div>
+                                    <div className="flex justify-between py-2 border-b border-border">
+                                        <span className="text-muted-foreground">Location</span>
+                                        <span className="text-foreground">{siteDetail.location}</span>
+                                    </div>
+                                    <div className="flex justify-between py-2 border-b border-border">
+                                        <span className="text-muted-foreground">Assigned by</span>
+                                        <span className="text-foreground">{assignment.assignedBy}</span>
+                                    </div>
+                                </div>
+                                <PermissionGuard action="assignEquipment">
+                                    <Button
+                                        variant="outline"
+                                        className="w-full border-destructive text-destructive hover:bg-destructive/10"
+                                        onClick={handleUnassign}
+                                    >
+                                        Unassign from Site
+                                    </Button>
+                                </PermissionGuard>
+                            </>
+                        ) : (
+                            <>
+                                <p className="text-sm text-muted-foreground">
+                                    This equipment is not assigned to any site.
+                                </p>
+                                <PermissionGuard action="assignEquipment">
+                                    <Dialog open={isDeployOpen} onOpenChange={setIsDeployOpen}>
+                                        <DialogTrigger>
+                                            <Button className="w-full">Deploy to Site</Button>
+                                        </DialogTrigger>
+                                        <DialogContent>
+                                            <DialogHeader>
+                                                <DialogTitle>Deploy to Site</DialogTitle>
+                                            </DialogHeader>
+                                            <div className="flex flex-col gap-4 py-4">
+                                                <div className="flex flex-col gap-2">
+                                                    <Label htmlFor="siteSelect">Select Site</Label>
+                                                    <select
+                                                        id="siteSelect"
+                                                        value={selectedSiteId}
+                                                        onChange={(e) => setSelectedSiteId(e.target.value)}
+                                                        className="il-touch w-full rounded-none border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                                                    >
+                                                        <option value="">Choose a site...</option>
+                                                        {activeSites.map((site) => (
+                                                            <option key={site._id} value={site._id}>
+                                                                {site.name} — {site.location}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                                <DialogFooter>
+                                                    <Button
+                                                        variant="outline"
+                                                        onClick={() => setIsDeployOpen(false)}
+                                                    >
+                                                        Cancel
+                                                    </Button>
+                                                    <Button onClick={handleDeploy} disabled={!selectedSiteId}>
+                                                        Deploy
+                                                    </Button>
+                                                </DialogFooter>
+                                            </div>
+                                        </DialogContent>
+                                    </Dialog>
+                                </PermissionGuard>
+                            </>
+                        )}
+                    </section>
+
+                    {/* ── Key Management ── */}
                     <section className="border border-border bg-card p-6 flex flex-col gap-4">
                         <h2 className="il-section-label">Key Management</h2>
                         <div className="flex flex-col gap-2 text-sm">
                             <div className="flex justify-between py-2 border-b border-border">
-                                <span className="text-muted-foreground">
-                                    Current Status
-                                </span>
-                                <span className="font-semibold">
-                                    {equipment.keyStatus}
-                                </span>
+                                <span className="text-muted-foreground">Current Status</span>
+                                <span className="font-semibold">{equipment.keyStatus}</span>
                             </div>
                         </div>
 
-                        {equipment.keyStatus === "Key Out" && (
-                            <Dialog
-                                open={isReturnOpen}
-                                onOpenChange={setIsReturnOpen}
-                            >
-                                <DialogTrigger>
-                                    <Button
-                                        variant="outline"
-                                        className="w-full mt-2 border-destructive text-destructive hover:bg-destructive/10"
-                                    >
-                                        Return Key
-                                    </Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                    <DialogHeader>
-                                        <DialogTitle>
+                        <PermissionGuard action="checkOutKey">
+                            {equipment.keyStatus === "Key In" ? (
+                                <Dialog open={isCheckOutOpen} onOpenChange={setIsCheckOutOpen}>
+                                    <DialogTrigger>
+                                        <Button className="w-full mt-2">Check Out Key</Button>
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                        <DialogHeader>
+                                            <DialogTitle>Check Out Key</DialogTitle>
+                                        </DialogHeader>
+                                        <div className="flex flex-col gap-4 py-4">
+                                            <div className="flex flex-col gap-2">
+                                                <Label htmlFor="workerName">Worker Name</Label>
+                                                <Input
+                                                    id="workerName"
+                                                    value={workerName}
+                                                    onChange={(e) => setWorkerName(e.target.value)}
+                                                    placeholder="e.g., Juan dela Cruz"
+                                                />
+                                            </div>
+                                            <DialogFooter>
+                                                <Button onClick={handleCheckOutKey}>Confirm Checkout</Button>
+                                            </DialogFooter>
+                                        </div>
+                                    </DialogContent>
+                                </Dialog>
+                            ) : (
+                                <Dialog open={isReturnOpen} onOpenChange={setIsReturnOpen}>
+                                    <DialogTrigger>
+                                        <Button variant="outline" className="w-full mt-2 border-destructive text-destructive hover:bg-destructive/10">
                                             Return Key
-                                        </DialogTitle>
-                                    </DialogHeader>
-                                    <div className="py-4 text-sm text-muted-foreground">
-                                        Confirm that the key for{" "}
-                                        {equipment.name} has been returned
-                                        to the operations center.
-                                    </div>
-                                    <DialogFooter>
-                                        <Button
-                                            variant="outline"
-                                            onClick={() => setIsReturnOpen(false)}
-                                        >
-                                            Cancel
                                         </Button>
-                                        <Button onClick={handleReturnKey}>
-                                            Confirm Return
-                                        </Button>
-                                    </DialogFooter>
-                                </DialogContent>
-                            </Dialog>
-                        )}
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                        <DialogHeader>
+                                            <DialogTitle>Return Key</DialogTitle>
+                                        </DialogHeader>
+                                        <div className="py-4 text-sm text-muted-foreground">
+                                            Confirm that the key for {equipment.name} has been returned to the operations center.
+                                        </div>
+                                        <DialogFooter>
+                                            <Button variant="outline" onClick={() => setIsReturnOpen(false)}>Cancel</Button>
+                                            <Button onClick={handleReturnKey}>Confirm Return</Button>
+                                        </DialogFooter>
+                                    </DialogContent>
+                                </Dialog>
+                            )}
+                        </PermissionGuard>
                     </section>
                 </div>
             </div>
