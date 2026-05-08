@@ -10,12 +10,24 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as RegisterRouteImport } from './routes/register'
+import { Route as MapRouteImport } from './routes/map'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as AuditLogRouteImport } from './routes/audit-log'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as SitesIndexRouteImport } from './routes/sites/index'
+import { Route as EquipmentIndexRouteImport } from './routes/equipment/index'
+import { Route as SitesSiteIdRouteImport } from './routes/sites/$siteId'
+import { Route as EquipmentNewRouteImport } from './routes/equipment/new'
+import { Route as EquipmentEquipmentIdRouteImport } from './routes/equipment/$equipmentId'
 
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MapRoute = MapRouteImport.update({
+  id: '/map',
+  path: '/map',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -23,40 +35,129 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
+const AuditLogRoute = AuditLogRouteImport.update({
+  id: '/audit-log',
+  path: '/audit-log',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitesIndexRoute = SitesIndexRouteImport.update({
+  id: '/sites/',
+  path: '/sites/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EquipmentIndexRoute = EquipmentIndexRouteImport.update({
+  id: '/equipment/',
+  path: '/equipment/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitesSiteIdRoute = SitesSiteIdRouteImport.update({
+  id: '/sites/$siteId',
+  path: '/sites/$siteId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EquipmentNewRoute = EquipmentNewRouteImport.update({
+  id: '/equipment/new',
+  path: '/equipment/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EquipmentEquipmentIdRoute = EquipmentEquipmentIdRouteImport.update({
+  id: '/equipment/$equipmentId',
+  path: '/equipment/$equipmentId',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/dashboard': typeof DashboardRoute
+  '/': typeof IndexRoute
+  '/audit-log': typeof AuditLogRoute
   '/login': typeof LoginRoute
+  '/map': typeof MapRoute
   '/register': typeof RegisterRoute
+  '/equipment/$equipmentId': typeof EquipmentEquipmentIdRoute
+  '/equipment/new': typeof EquipmentNewRoute
+  '/sites/$siteId': typeof SitesSiteIdRoute
+  '/equipment/': typeof EquipmentIndexRoute
+  '/sites/': typeof SitesIndexRoute
 }
 export interface FileRoutesByTo {
-  '/dashboard': typeof DashboardRoute
+  '/': typeof IndexRoute
+  '/audit-log': typeof AuditLogRoute
   '/login': typeof LoginRoute
+  '/map': typeof MapRoute
   '/register': typeof RegisterRoute
+  '/equipment/$equipmentId': typeof EquipmentEquipmentIdRoute
+  '/equipment/new': typeof EquipmentNewRoute
+  '/sites/$siteId': typeof SitesSiteIdRoute
+  '/equipment': typeof EquipmentIndexRoute
+  '/sites': typeof SitesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/dashboard': typeof DashboardRoute
+  '/': typeof IndexRoute
+  '/audit-log': typeof AuditLogRoute
   '/login': typeof LoginRoute
+  '/map': typeof MapRoute
   '/register': typeof RegisterRoute
+  '/equipment/$equipmentId': typeof EquipmentEquipmentIdRoute
+  '/equipment/new': typeof EquipmentNewRoute
+  '/sites/$siteId': typeof SitesSiteIdRoute
+  '/equipment/': typeof EquipmentIndexRoute
+  '/sites/': typeof SitesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/dashboard' | '/login' | '/register'
+  fullPaths:
+    | '/'
+    | '/audit-log'
+    | '/login'
+    | '/map'
+    | '/register'
+    | '/equipment/$equipmentId'
+    | '/equipment/new'
+    | '/sites/$siteId'
+    | '/equipment/'
+    | '/sites/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/dashboard' | '/login' | '/register'
-  id: '__root__' | '/dashboard' | '/login' | '/register'
+  to:
+    | '/'
+    | '/audit-log'
+    | '/login'
+    | '/map'
+    | '/register'
+    | '/equipment/$equipmentId'
+    | '/equipment/new'
+    | '/sites/$siteId'
+    | '/equipment'
+    | '/sites'
+  id:
+    | '__root__'
+    | '/'
+    | '/audit-log'
+    | '/login'
+    | '/map'
+    | '/register'
+    | '/equipment/$equipmentId'
+    | '/equipment/new'
+    | '/sites/$siteId'
+    | '/equipment/'
+    | '/sites/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  DashboardRoute: typeof DashboardRoute
+  IndexRoute: typeof IndexRoute
+  AuditLogRoute: typeof AuditLogRoute
   LoginRoute: typeof LoginRoute
+  MapRoute: typeof MapRoute
   RegisterRoute: typeof RegisterRoute
+  EquipmentEquipmentIdRoute: typeof EquipmentEquipmentIdRoute
+  EquipmentNewRoute: typeof EquipmentNewRoute
+  SitesSiteIdRoute: typeof SitesSiteIdRoute
+  EquipmentIndexRoute: typeof EquipmentIndexRoute
+  SitesIndexRoute: typeof SitesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -68,6 +169,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/map': {
+      id: '/map'
+      path: '/map'
+      fullPath: '/map'
+      preLoaderRoute: typeof MapRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -75,20 +183,69 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
+    '/audit-log': {
+      id: '/audit-log'
+      path: '/audit-log'
+      fullPath: '/audit-log'
+      preLoaderRoute: typeof AuditLogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sites/': {
+      id: '/sites/'
+      path: '/sites'
+      fullPath: '/sites/'
+      preLoaderRoute: typeof SitesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/equipment/': {
+      id: '/equipment/'
+      path: '/equipment'
+      fullPath: '/equipment/'
+      preLoaderRoute: typeof EquipmentIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sites/$siteId': {
+      id: '/sites/$siteId'
+      path: '/sites/$siteId'
+      fullPath: '/sites/$siteId'
+      preLoaderRoute: typeof SitesSiteIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/equipment/new': {
+      id: '/equipment/new'
+      path: '/equipment/new'
+      fullPath: '/equipment/new'
+      preLoaderRoute: typeof EquipmentNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/equipment/$equipmentId': {
+      id: '/equipment/$equipmentId'
+      path: '/equipment/$equipmentId'
+      fullPath: '/equipment/$equipmentId'
+      preLoaderRoute: typeof EquipmentEquipmentIdRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  DashboardRoute: DashboardRoute,
+  IndexRoute: IndexRoute,
+  AuditLogRoute: AuditLogRoute,
   LoginRoute: LoginRoute,
+  MapRoute: MapRoute,
   RegisterRoute: RegisterRoute,
+  EquipmentEquipmentIdRoute: EquipmentEquipmentIdRoute,
+  EquipmentNewRoute: EquipmentNewRoute,
+  SitesSiteIdRoute: SitesSiteIdRoute,
+  EquipmentIndexRoute: EquipmentIndexRoute,
+  SitesIndexRoute: SitesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -9,9 +9,7 @@ import z from "zod";
 import { authClient } from "@/lib/auth-client";
 
 export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () => void }) {
-  const navigate = useNavigate({
-    from: "/",
-  });
+  const navigate = useNavigate();
 
   const form = useForm({
     defaultValues: {
@@ -29,7 +27,7 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
         {
           onSuccess: () => {
             navigate({
-              to: "/dashboard",
+              to: "/equipment",
             });
             toast.success("Sign up successful");
           },
