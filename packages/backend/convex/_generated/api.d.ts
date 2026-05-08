@@ -9,6 +9,7 @@
  */
 
 import type * as activity from "../activity.js";
+import type * as assignments from "../assignments.js";
 import type * as auth from "../auth.js";
 import type * as equipment from "../equipment.js";
 import type * as healthCheck from "../healthCheck.js";
@@ -16,7 +17,7 @@ import type * as http from "../http.js";
 import type * as privateData from "../privateData.js";
 import type * as rbac from "../rbac.js";
 import type * as seed from "../seed.js";
-import type * as seedAuth from "../seedAuth.js";
+import type * as sites from "../sites.js";
 
 import type {
   ApiFromModules,
@@ -26,6 +27,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   activity: typeof activity;
+  assignments: typeof assignments;
   auth: typeof auth;
   equipment: typeof equipment;
   healthCheck: typeof healthCheck;
@@ -33,7 +35,7 @@ declare const fullApi: ApiFromModules<{
   privateData: typeof privateData;
   rbac: typeof rbac;
   seed: typeof seed;
-  seedAuth: typeof seedAuth;
+  sites: typeof sites;
 }>;
 
 /**

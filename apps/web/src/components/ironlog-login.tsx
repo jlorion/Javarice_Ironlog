@@ -9,9 +9,7 @@ import z from "zod";
 import { authClient } from "@/lib/auth-client";
 
 export default function IronLogLogin() {
-    const navigate = useNavigate({
-        from: "/login",
-    });
+    const navigate = useNavigate();
 
     const form = useForm({
         defaultValues: {
@@ -27,7 +25,7 @@ export default function IronLogLogin() {
                 {
                     onSuccess: () => {
                         navigate({
-                            to: "/dashboard",
+                            to: "/equipment",
                         });
                         toast.success("Sign in successful");
                     },

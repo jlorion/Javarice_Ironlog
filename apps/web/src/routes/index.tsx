@@ -1,6 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
-import IronLogDashboard from "@/components/ironlog-dashboard";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
-    component: IronLogDashboard,
+    beforeLoad: () => {
+        throw redirect({
+            to: "/equipment",
+        });
+    },
 });

@@ -20,21 +20,23 @@ export default function UserMenu() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="outline" />}>{user?.name}</DropdownMenuTrigger>
+      <DropdownMenuTrigger render={<Button variant="outline" size="sm" />}>
+        {user?.name ?? user?.email ?? "Account"}
+      </DropdownMenuTrigger>
       <DropdownMenuContent className="bg-card">
         <DropdownMenuGroup>
           <DropdownMenuLabel>My Account</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>{user?.email}</DropdownMenuItem>
+          {user?.email && (
+            <DropdownMenuItem disabled>{user.email}</DropdownMenuItem>
+          )}
           <DropdownMenuItem
             variant="destructive"
             onClick={() => {
               authClient.signOut({
                 fetchOptions: {
                   onSuccess: () => {
-                    navigate({
-                      to: "/dashboard",
-                    });
+                    navigate({ to: "/equipment" });
                   },
                 },
               });
