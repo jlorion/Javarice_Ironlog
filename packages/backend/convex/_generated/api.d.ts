@@ -16,6 +16,7 @@ import type * as http from "../http.js";
 import type * as privateData from "../privateData.js";
 import type * as rbac from "../rbac.js";
 import type * as seed from "../seed.js";
+import type * as seedAuth from "../seedAuth.js";
 
 import type {
   ApiFromModules,
@@ -32,6 +33,7 @@ declare const fullApi: ApiFromModules<{
   privateData: typeof privateData;
   rbac: typeof rbac;
   seed: typeof seed;
+  seedAuth: typeof seedAuth;
 }>;
 
 /**

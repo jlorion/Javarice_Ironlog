@@ -2,7 +2,7 @@ import { Button } from "@project-construction/ui/components/button";
 import { Input } from "@project-construction/ui/components/input";
 import { Label } from "@project-construction/ui/components/label";
 import { useForm } from "@tanstack/react-form";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import z from "zod";
 
@@ -194,9 +194,11 @@ export default function IronLogLogin() {
                         </form.Subscribe>
                     </form>
 
-                    <div className="mt-6 border-t border-border pt-4 text-sm text-muted-foreground">
-                        Need access? Call dispatch or request setup from your
-                        site supervisor.
+                    <div className="mt-6 border-t border-border pt-4 text-sm text-muted-foreground flex flex-col gap-2">
+                        <span>Need access? Call dispatch or request setup from your site supervisor.</span>
+                        <Link to="/register" className="text-primary hover:underline font-medium">
+                            Or create an account here →
+                        </Link>
                     </div>
                 </section>
             </div>
