@@ -194,11 +194,11 @@ See the full [Roles & Permissions](#roles--permissions) section below.
 
 ```mermaid
 erDiagram
-    equipment ||--o{ equipmentAssignments : "assigned via"
-    sites ||--o{ equipmentAssignments : "hosts"
-    equipment ||--o{ keyAuditLogs : "has key events"
-    equipment ||--o{ activityLogs : "has activity"
-    sites ||--o{ activityLogs : "has activity"
+    equipment ||--o{ equipmentAssignments : assigned_via
+    sites ||--o{ equipmentAssignments : hosts
+    equipment ||--o{ keyAuditLogs : has_key_events
+    equipment ||--o{ activityLogs : has_activity
+    sites ||--o{ activityLogs : has_activity
 
     equipment {
         string id PK
